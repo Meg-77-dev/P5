@@ -3,7 +3,7 @@ const panierLocalStorage = JSON.parse(localStorage.getItem("cart"));
 console.log(panierLocalStorage)
 
 //si le localStorage est vide afficher une alerte "Votre panier est vide"
-if (panierLocalStorage == 0) {
+if (panierLocalStorage == null) {
     alert("Votre panier est vide");
 }
 else {
@@ -90,7 +90,6 @@ for (let i = 0; i < panierLocalStorage.length; i++) {
         const quant = document.createElement("p");
         divSettingsQuant.appendChild(quant);
         quant.textContent = "Qté :", panierLocalStorage[i].quantity;
-
 
         //Création de la balise input qui permettra de changer la quantité
         const inputQuant = document.createElement("input");

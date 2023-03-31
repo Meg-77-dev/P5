@@ -2,8 +2,8 @@
 const panierLocalStorage = JSON.parse(localStorage.getItem("cart"));
 console.log(panierLocalStorage)
 
- //si le localStorage est vide afficher une alerte "Votre panier est vide"
- if (panierLocalStorage == 0) {
+//si le localStorage est vide afficher une alerte "Votre panier est vide"
+if (panierLocalStorage == 0) {
     alert("Votre panier est vide");
 }
 else {
@@ -25,11 +25,11 @@ console.log(TotalPrice)
 
 for (let i = 0; i < panierLocalStorage.length; i++) {
 
-
+    function fetchPanier() {
     fetch("http://localhost:3000/api/products/" + panierLocalStorage[i].id)
         .then((response) => response.json())
         .then((dataAPI) => AffichPanier(dataAPI));
-    
+    }
     function AffichPanier(dataAPI) {
 
         //Création de la balise article
@@ -103,13 +103,22 @@ for (let i = 0; i < panierLocalStorage.length; i++) {
         inputQuant.setAttribute("value", panierLocalStorage[i].quantity)
 
         //Modifier la quantité dans le input du panier
-        inputQuant.addEventListener("change", () => {
+        inputQuant.addEventListener("change", (e) => {
             //Récupérer l'élément parent
             const kanapInputModif = inputQuant.closest("article")
-            NouvelQuant = inputQuant.value
+            console.log(kanapInputModif)
+            const inputModif = panierLocalStorage.find((kanap) => kanap.id == kanapInputModif.dataset.id && kanap.color == kanapInputModif.dataset.color);
+            console.log(inputModif)
+            if(inputModif ){
+                const NouvelQuant = inputModif.quantity = e.target.value
+                console.log(NouvelQuant)
+                inputModif.quantity = NouvelQuant
+                localStorage.setItem("cart", JSON.stringify(panierLocalStorage))
+            
             //si la nouvelle quantité n'est entre 1 et 100
-            if (NouvelQuant < 1 || NouvelQuant > 100) {
-                alert("Veuillez selectionner une quantité entre 1 et 100")
+            if(NouvelQuant < 1 || NouvelQuant > 100) {
+               alert("Veuillez selectionner une quantité entre 1 et 100")
+            }
             }
         })
 
@@ -132,9 +141,9 @@ for (let i = 0; i < panierLocalStorage.length; i++) {
             //Récupérer l'élément parent
             const kanapDelete = deleteItem.closest("article")
             //vérifier avec l'id et la couleur qu'il s'agit du bon canapé 
-            const bonKanapDelete = panierLocalStorage.find((kanap) => kanap.id == kanapDelete.dataset.id && kanap.color == kanapDelete.dataset.color);
+            const bonKanapDelete = panierLocalStorage.findIndex((kanap) => kanap.id == kanapDelete.dataset.id && kanap.color == kanapDelete.dataset.color);
             console.log(bonKanapDelete);
-            if (bonKanapDelete) {
+            if (bonKanapDelete !== -1) {
                 //Supprimer l'affichage de l'article
                 kanapDelete.remove();
                 //Supprimer l'article du localStorage
@@ -144,4 +153,7 @@ for (let i = 0; i < panierLocalStorage.length; i++) {
             }
         })
     }
+    fetchPanier() 
 }
+
+

@@ -10,22 +10,14 @@ else {
     const cart = [];
     //Ajouter le contenu du localstorage dans le tableau cart
     cart.push(panierLocalStorage)
-}
 
 const itemCart = document.querySelector("#cart__items")
-
-
-//Selectionner la balise totalQuantity
-const TotalQuant = document.querySelector("#totalQuantity")
-console.log(TotalQuant)
-
-//Selectionner la balise totalPrice
-const TotalPrice = document.querySelector("#totalPrice")
-console.log(TotalPrice)
+}
 
 for (let i = 0; i < panierLocalStorage.length; i++) {
 
-    function fetchPanier() {
+
+    function fetchPanier(){
     fetch("http://localhost:3000/api/products/" + panierLocalStorage[i].id)
         .then((response) => response.json())
         .then((dataAPI) => AffichPanier(dataAPI));
@@ -151,8 +143,21 @@ for (let i = 0; i < panierLocalStorage.length; i++) {
                 localStorage.setItem("cart", JSON.stringify(panierLocalStorage));
             }
         })
-    }
-    fetchPanier() 
-}
+        let totalPrice = 0;
+        let totalQuantity = 0;
+        totalPrice += (panierLocalStorage[i].quantity) * (dataAPI.price);
+        totalQuantity += Number(panierLocalStorage[i].quantity); 
+        console.log(totalPrice)
+        console.log(totalQuantity)
 
+        //Afficher le prix total du panier
+        const selectTotalPrice = document.querySelector("#totalPrice")
+        selectTotalPrice.textContent = totalPrice * totalQuantity
+        //Afficher le nombre d'articles dans le panier 
+        const selectTotalQuant = document.querySelector("#totalQuantity")
+        selectTotalQuant.textContent = totalQuantity 
+    }
+
+fetchPanier()
+}
 

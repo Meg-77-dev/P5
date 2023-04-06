@@ -11,7 +11,7 @@ async function fetchPanier(i) {
         .then((dataAPI) => AffichPanier(dataAPI, i));
 }
 
-function calculPrix(){
+function calculPrix() {
     //Total
     let totalPrice = 0;
     let totalQuantity = 0;
@@ -22,17 +22,17 @@ function calculPrix(){
         console.log(totalPrice, totalQuantity, kanap.quantity, kanap.price)
     }
     //Calcul total des prix
-  
+
     //Afficher le prix total du panier
     const selectTotalPrice = document.querySelector("#totalPrice")
     selectTotalPrice.textContent = Number(selectTotalPrice.textContent) + totalPrice;
     //Afficher le nombre d'articles dans le panier 
     const selectTotalQuant = document.querySelector("#totalQuantity")
     selectTotalQuant.textContent = totalQuantity
-  
-  }
 
-function AffichPanier(dataAPI,i) {
+}
+
+function AffichPanier(dataAPI, i) {
     panierLocalStorage[i].price = dataAPI.price
     //Création de la balise article
     const article = document.createElement("article");
@@ -150,39 +150,38 @@ function AffichPanier(dataAPI,i) {
             //Supprimer l'affichage de l'article
             kanapDelete.remove();
             //Supprimer l'article du localStorage
-            panierLocalStorage2.splice(bonKanapDelete, 1);
+            kanapdansLS.splice(bonKanapDelete, 1);
             //Mettre à jour le localStorage 
             localStorage.setItem("cart", JSON.stringify(kanapdansLS));
-            
+
             calculPrix()
         }
     })
-    
 }
+
 async function main() {
-//si le localStorage est vide afficher une alerte "Votre panier est vide"
-if (panierLocalStorage == 0) {
-    alert("Votre panier est vide");
-}
-else {
-    const cart = [];
-    //Ajouter le contenu du localstorage dans le tableau cart
-    cart.push(panierLocalStorage)
-    const itemCart = document.querySelector("#cart__items");
-    const selectTotalQuant = document.querySelector("#totalQuantity")
-    const selectTotalPrice = document.querySelector("#totalPrice")
-
-    for (let i = 0; i < panierLocalStorage.length; i++) {
-
-   
-        await fetchPanier(i)
+    //si le localStorage est vide afficher une alerte "Votre panier est vide"
+    if (panierLocalStorage == 0) {
+        alert("Votre panier est vide");
     }
-    calculPrix()
-}
+    else {
+        const cart = [];
+        //Ajouter le contenu du localstorage dans le tableau cart
+        cart.push(panierLocalStorage)
+        const itemCart = document.querySelector("#cart__items");
+        const selectTotalQuant = document.querySelector("#totalQuantity")
+        const selectTotalPrice = document.querySelector("#totalPrice")
+
+        for (let i = 0; i < panierLocalStorage.length; i++) {
+
+            await fetchPanier(i)
+        }
+        calculPrix()
+    }
 }
 main();
-//formulaire 
 
+//formulaire 
 //selectionner le bouton commander
 const btnOrder = document.querySelector("#order")
 btnOrder.addEventListener("click", (event) => {

@@ -180,7 +180,7 @@ async function main() {
             await fetchPanier(i)
         }
         //Supprimer le prix du localStorageInitial
-        for (let p = 0; p < panierLocalStorageInitial.length; p++) {
+        for (let p = 0; p < panierLocalStorage.length; p++) {
             delete panierLocalStorageInitial[p].price
         }
         calculPrix()
@@ -197,7 +197,6 @@ function soumettreForm() {
 const btnOrder = document.querySelector("#order")
 btnOrder.addEventListener("click", (event) =>  {
     event.preventDefault()
-    console.log(btnOrder)
     //Tous les querySelector des inputs du formulaire 
     const inputfirstName = document.querySelector("#firstName")
     const inputlastName = document.querySelector("#lastName")
@@ -213,16 +212,19 @@ btnOrder.addEventListener("click", (event) =>  {
     }
 
     //constante qui contiendra le contenu du formulaire de contact et l'id de chaque canapé du panier
-    const contenuForm = {
-        infocontact: {
+        const contact =  {
             firstName: inputfirstName.value,
             lastName: inputlastName.value,
             address: inputaddress.value,
             city: inputcity.value,
             email: inputemail.value,
-        },
-        objet: objetContact
-    }
+        };
+        const products = objetContact
+
+        const contenuForm = {
+            contact, 
+            products,
+        }
     console.log(contenuForm)
     //Requête POST
     fetch("http://localhost:3000/api/products/order", {
@@ -231,7 +233,7 @@ btnOrder.addEventListener("click", (event) =>  {
             "Content-type": "application/json",
         },
         body:
-            JSON.stringify(objetContact)
+            JSON.stringify(contenuForm)
     })
         .then(reponse => reponse.json())
         .then(dataForm => console.log(dataForm));

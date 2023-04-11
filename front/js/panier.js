@@ -1,9 +1,9 @@
-//panier dans le localStorage avec le prix
+//panier dans le localStorage initial 
+const panierLocalStorageInitial = JSON.parse(localStorage.getItem("cart"));
+console.log(panierLocalStorageInitial)
+//Nouveau LS avec le prix
 const panierLocalStorage = JSON.parse(localStorage.getItem("cart"));
 console.log(panierLocalStorage)
-//panier dans le localStorage initial sans le prix 
-const kanapdansLS = JSON.parse(localStorage.getItem("cart"));
-console.log(kanapdansLS)
 
 async function fetchPanier(i) {
     return await fetch("http://localhost:3000/api/products/" + panierLocalStorage[i].id)
@@ -19,13 +19,11 @@ function calculPrix() {
     for (const kanap of panierLocalStorage) {
         totalQuantity += Number(kanap.quantity)
         totalPrice += Number(kanap.quantity) * Number(kanap.price);
-        console.log(totalPrice, totalQuantity, kanap.quantity, kanap.price)
     }
-    //Calcul total des prix
 
     //Afficher le prix total du panier
     const selectTotalPrice = document.querySelector("#totalPrice")
-    selectTotalPrice.textContent = Number(selectTotalPrice.textContent) + totalPrice;
+    selectTotalPrice.textContent = totalPrice;
     //Afficher le nombre d'articles dans le panier 
     const selectTotalQuant = document.querySelector("#totalQuantity")
     selectTotalQuant.textContent = totalQuantity
@@ -105,25 +103,27 @@ function AffichPanier(dataAPI, i) {
     inputQuant.setAttribute("value", panierLocalStorage[i].quantity)
 
     //Modifier la quantité dans le input du panier
-    inputQuant.addEventListener("change", (e) => {
+    inputQuant.addEventListener("change", () => {
         //Récupérer l'élément parent
         const kanapInputModif = inputQuant.closest("article")
         console.log(kanapInputModif)
         //vérifier si le canapé existe dans le localStorage avec l'id et la couleur 
-        const inputModif = kanapdansLS.find((kanap) => kanap.id == kanapInputModif.dataset.id && kanap.color == kanapInputModif.dataset.color);
+        const inputModif = panierLocalStorage.find((kanap) => kanap.id == kanapInputModif.dataset.id && kanap.color == kanapInputModif.dataset.color);
         console.log(inputModif)
+
         //Modifier la quantité dans l'input
         if (inputModif) {
-            const NouvelQuant = inputModif.quantity = e.target.value
+            const NouvelQuant = inputModif.quantity = inputQuant.value
             console.log(NouvelQuant)
             inputModif.quantity = NouvelQuant
-            localStorage.setItem("cart", JSON.stringify(kanapdansLS))
-
+            localStorage.setItem("cart", JSON.stringify(panierLocalStorage))
             //si la nouvelle quantité n'est entre 1 et 100
             if (NouvelQuant < 1 || NouvelQuant > 100) {
                 alert("Veuillez selectionner une quantité entre 1 et 100")
             }
         }
+        calculPrix()
+
     })
 
     //Création de la div cart__item__content__settings__delete contenant la balise paragraphe qui permettra de supprimer un canapé
@@ -144,30 +144,33 @@ function AffichPanier(dataAPI, i) {
         //Récupérer l'élément parent
         const kanapDelete = deleteItem.closest("article")
         //vérifier avec l'id et la couleur qu'il s'agit du bon canapé 
-        const bonKanapDelete = kanapdansLS.findIndex((kanap) => kanap.id == kanapDelete.dataset.id && kanap.color == kanapDelete.dataset.color);
+        const bonKanapDelete = panierLocalStorage.findIndex((kanap) => kanap.id == kanapDelete.dataset.id && kanap.color == kanapDelete.dataset.color);
         console.log(bonKanapDelete);
         if (bonKanapDelete !== -1) {
             //Supprimer l'affichage de l'article
             kanapDelete.remove();
             //Supprimer l'article du localStorage
-            kanapdansLS.splice(bonKanapDelete, 1);
+            panierLocalStorage.splice(bonKanapDelete, 1);
             //Mettre à jour le localStorage 
-            localStorage.setItem("cart", JSON.stringify(kanapdansLS));
+            localStorage.setItem("cart", JSON.stringify(panierLocalStorage));
+            //Rafraîchir la page
+            window.location.reload()
 
             calculPrix()
         }
+
     })
 }
 
 async function main() {
     //si le localStorage est vide afficher une alerte "Votre panier est vide"
-    if (panierLocalStorage == 0) {
+    if (panierLocalStorageInitial == 0) {
         alert("Votre panier est vide");
     }
     else {
         const cart = [];
         //Ajouter le contenu du localstorage dans le tableau cart
-        cart.push(panierLocalStorage)
+        cart.push(panierLocalStorageInitial)
         const itemCart = document.querySelector("#cart__items");
         const selectTotalQuant = document.querySelector("#totalQuantity")
         const selectTotalPrice = document.querySelector("#totalPrice")
@@ -176,19 +179,64 @@ async function main() {
 
             await fetchPanier(i)
         }
+        //Supprimer le prix du localStorageInitial
+        for (let p = 0; p < panierLocalStorageInitial.length; p++) {
+            delete panierLocalStorageInitial[p].price
+        }
         calculPrix()
     }
 }
 main();
 
-//formulaire 
-//selectionner le bouton commander
-const btnOrder = document.querySelector("#order")
-btnOrder.addEventListener("click", (event) => {
-    event.preventDefault()
+//formulaire de commande 
+function soumettreForm() {
     const form = document.querySelector(".cart__order__form")
     console.log(form)
+}
+//selectionner le bouton commander
+const btnOrder = document.querySelector("#order")
+btnOrder.addEventListener("click", (event) =>  {
+    event.preventDefault()
+    console.log(btnOrder)
+    //Tous les querySelector des inputs du formulaire 
+    const inputfirstName = document.querySelector("#firstName")
+    const inputlastName = document.querySelector("#lastName")
+    const inputaddress = document.querySelector("#address")
+    const inputcity = document.querySelector("#city")
+    const inputemail = document.querySelector("#email")
+
+    //Tableau pour récupérer les id des canapés présents dans le LocalStorage 
+    const objetContact = [];
+    for (let c = 0; c < panierLocalStorageInitial.length; c++) {
+        objetContact.push(panierLocalStorageInitial[c].id)
+        console.log(objetContact)
+    }
+
+    //constante qui contiendra le contenu du formulaire de contact et l'id de chaque canapé du panier
+    const contenuForm = {
+        infocontact: {
+            firstName: inputfirstName.value,
+            lastName: inputlastName.value,
+            address: inputaddress.value,
+            city: inputcity.value,
+            email: inputemail.value,
+        },
+        objet: objetContact
+    }
+    console.log(contenuForm)
+    //Requête POST
+    fetch("http://localhost:3000/api/products/order", {
+        method: "POST",
+        headers: {
+            "Content-type": "application/json",
+        },
+        body:
+            JSON.stringify(objetContact)
+    })
+        .then(reponse => reponse.json())
+        .then(dataForm => console.log(dataForm));
 })
-console.log(btnOrder)
+
+
 
 

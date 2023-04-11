@@ -195,8 +195,11 @@ function soumettreForm() {
 }
 //selectionner le bouton commander
 const btnOrder = document.querySelector("#order")
-btnOrder.addEventListener("click", (event) =>  {
+btnOrder.addEventListener("click", (event) => {
     event.preventDefault()
+    if (panierLocalStorageInitial == 0) {
+        alert("Veuillez ajouter un ou des canapés au panier")
+    }
     //Tous les querySelector des inputs du formulaire 
     const inputfirstName = document.querySelector("#firstName")
     const inputlastName = document.querySelector("#lastName")
@@ -212,20 +215,30 @@ btnOrder.addEventListener("click", (event) =>  {
     }
 
     //constante qui contiendra le contenu du formulaire de contact et l'id de chaque canapé du panier
-        const contact =  {
-            firstName: inputfirstName.value,
-            lastName: inputlastName.value,
-            address: inputaddress.value,
-            city: inputcity.value,
-            email: inputemail.value,
-        };
-        const products = objetContact
+    const contact = {
+        firstName: inputfirstName.value,
+        lastName: inputlastName.value,
+        address: inputaddress.value,
+        city: inputcity.value,
+        email: inputemail.value,
+    };
+    const products = objetContact
 
-        const contenuForm = {
-            contact, 
-            products,
-        }
-    console.log(contenuForm)
+    const contenuForm = {
+        contact,
+        products,
+    }
+
+    const orderId = ""
+
+    // Selection des balises contenant les messages d'erreur
+    const messageFirstName = document.querySelector("#firstNameErrorMsg")
+    const messageLastName = document.querySelector("#lastNameErrorMsg")
+    const messageAddress = document.querySelector("#addressErrorMsg")
+    const messageCity = document.querySelector("#cityErrorMsg")
+    const messageEmail = document.querySelector("#emailErrorMsg")
+
+
     //Requête POST
     fetch("http://localhost:3000/api/products/order", {
         method: "POST",
@@ -236,8 +249,64 @@ btnOrder.addEventListener("click", (event) =>  {
             JSON.stringify(contenuForm)
     })
         .then(reponse => reponse.json())
-        .then(dataForm => console.log(dataForm));
-})
+        .then(dataForm => console.log(dataForm))
+
+    RegexPrenom()
+    RegexNom() 
+    RegeAdresse()
+    //Regex votre prénom doit contenir minimun 3 lettres et maximum 20
+    function RegexPrenom() {
+        const firstName = contact.firstName
+        console.log(firstName)
+        if (/^[A-Za-z]{3,20}$/.test(firstName)) {
+            console.log("ok")
+            messageFirstName.textContent = "";
+            return true;
+        }
+        else {
+            console.log("ko")
+            messageFirstName.textContent = "Pierre"
+            alert("Votre prénom doit contenir 3 à 20 caractères et ne doit contenir ni chiffres ni symboles ")
+            return false;
+        }
+    }
+    //Regex votre nom de famille doit contenir minimun 3 lettres et maximum 20
+    function RegexNom() {
+        const lastName = contact.lastName
+        console.log(lastName)
+        if (/^[A-Z]{3,20}$/.test(lastName)) {
+            console.log("ok")
+            messageLastName.textContent = "";
+            return true;
+
+        }
+        else {
+            console.log("ko")
+            messageLastName.textContent = "DUPOND"
+            alert("Votre nom de famille doit contenir que des majuscules et ne doit pas contenir ni chiffres ni symboles")
+            return false
+        }
+    }
+
+    //Regex votre adresse postal ne doit pas contenir de symboles et ponctuations
+    function RegeAdresse(){
+    const address = contact.address
+    console.log(address)
+    if (/^\sA-Za-z0-9]{3,20}$/.test(address)) {
+        console.log("ok")
+        messageAddress.textContent = "";
+        return true;
+    }
+    else {
+        console.log("ko")
+        messageAddress.textContent = "1 rue du Chateau"
+        alert("Votre adresse postale ne doit pas contenir de symboles et ponctuations")
+        return false; 
+
+    }
+}
+
+});
 
 
 

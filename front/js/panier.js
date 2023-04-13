@@ -108,7 +108,7 @@ function AffichPanier(dataAPI, i) {
         const kanapInputModif = inputQuant.closest("article")
         console.log(kanapInputModif)
         //vérifier si le canapé existe dans le localStorage avec l'id et la couleur 
-        const inputModif = panierLocalStorage.find((kanap) => kanap.id == kanapInputModif.dataset.id && kanap.color == kanapInputModif.dataset.color);
+        const inputModif = panierLocalStorageInitial.find((kanap) => kanap.id == kanapInputModif.dataset.id && kanap.color == kanapInputModif.dataset.color);
         console.log(inputModif)
 
         //Modifier la quantité dans l'input
@@ -116,7 +116,7 @@ function AffichPanier(dataAPI, i) {
             const NouvelQuant = inputModif.quantity = inputQuant.value
             console.log(NouvelQuant)
             inputModif.quantity = NouvelQuant
-            localStorage.setItem("cart", JSON.stringify(panierLocalStorage))
+            localStorage.setItem("cart", JSON.stringify(panierLocalStorageInitial))
             //si la nouvelle quantité n'est entre 1 et 100
             if (NouvelQuant < 1 || NouvelQuant > 100) {
                 alert("Veuillez selectionner une quantité entre 1 et 100")
@@ -153,8 +153,6 @@ function AffichPanier(dataAPI, i) {
             panierLocalStorage.splice(bonKanapDelete, 1);
             //Mettre à jour le localStorage 
             localStorage.setItem("cart", JSON.stringify(panierLocalStorage));
-            //Rafraîchir la page
-            window.location.reload()
 
             calculPrix()
         }
@@ -179,20 +177,16 @@ async function main() {
 
             await fetchPanier(i)
         }
-        //Supprimer le prix du localStorageInitial
-        for (let p = 0; p < panierLocalStorage.length; p++) {
-            delete panierLocalStorageInitial[p].price
-        }
         calculPrix()
     }
 }
 main();
 
 //formulaire de commande 
-function soumettreForm() {
     const form = document.querySelector(".cart__order__form")
     console.log(form)
-}
+
+
 //selectionner le bouton commander
 const btnOrder = document.querySelector("#order")
 btnOrder.addEventListener("click", (event) => {
@@ -229,8 +223,6 @@ btnOrder.addEventListener("click", (event) => {
         products,
     }
 
-    const orderId = ""
-
     // Selection des balises contenant les messages d'erreur
     const messageFirstName = document.querySelector("#firstNameErrorMsg")
     const messageLastName = document.querySelector("#lastNameErrorMsg")
@@ -238,6 +230,8 @@ btnOrder.addEventListener("click", (event) => {
     const messageCity = document.querySelector("#cityErrorMsg")
     const messageEmail = document.querySelector("#emailErrorMsg")
 
+    // constante contenant l'orderId 
+    const orderId = "";
 
     //Requête POST
     fetch("http://localhost:3000/api/products/order", {
@@ -249,22 +243,32 @@ btnOrder.addEventListener("click", (event) => {
             JSON.stringify(contenuForm)
     })
         .then(reponse => reponse.json())
-        .then(dataForm => console.log(dataForm))
+        .then(dataForm => {
+            const orderId = dataForm.orderId
+            console.log(orderId)
+
+        if(orderId != null){
+            alert("Votre commande a été enregistré")
+            window.location.href = "confirmation.html?id=" + orderId
+        }
+        else {
+            alert("Votre commande est invalide")
+        }
 
     RegexPrenom()
-    RegexNom() 
-    RegeAdresse()
+    RegexNom()
+    RegexAdresse()
+    RegexVille()
+    RegexMail()
+    
     //Regex votre prénom doit contenir minimun 3 lettres et maximum 20
     function RegexPrenom() {
         const firstName = contact.firstName
-        console.log(firstName)
         if (/^[A-Za-z]{3,20}$/.test(firstName)) {
-            console.log("ok")
             messageFirstName.textContent = "";
             return true;
         }
         else {
-            console.log("ko")
             messageFirstName.textContent = "Pierre"
             alert("Votre prénom doit contenir 3 à 20 caractères et ne doit contenir ni chiffres ni symboles ")
             return false;
@@ -273,41 +277,63 @@ btnOrder.addEventListener("click", (event) => {
     //Regex votre nom de famille doit contenir minimun 3 lettres et maximum 20
     function RegexNom() {
         const lastName = contact.lastName
-        console.log(lastName)
         if (/^[A-Z]{3,20}$/.test(lastName)) {
-            console.log("ok")
             messageLastName.textContent = "";
             return true;
 
         }
         else {
-            console.log("ko")
             messageLastName.textContent = "DUPOND"
             alert("Votre nom de famille doit contenir que des majuscules et ne doit pas contenir ni chiffres ni symboles")
             return false
         }
     }
 
-    //Regex votre adresse postal ne doit pas contenir de symboles et ponctuations
-    function RegeAdresse(){
-    const address = contact.address
-    console.log(address)
-    if (/^\sA-Za-z0-9]{3,20}$/.test(address)) {
-        console.log("ok")
-        messageAddress.textContent = "";
-        return true;
+    //Regex votre adresse postale ne doit pas contenir de symboles et ponctuations
+    function RegexAdresse() {
+        const address = contact.address
+        if (/^[0-9\sA-Za-z ]{3,30}$/.test(address)) {
+            messageAddress.textContent = "";
+            return true;
+        }
+        else {
+            messageAddress.textContent = "1 rue du Chateau"
+            alert("Votre adresse postale ne doit pas contenir ni de symboles ni de ponctuations")
+            return false;
+
+        }
     }
-    else {
-        console.log("ko")
-        messageAddress.textContent = "1 rue du Chateau"
-        alert("Votre adresse postale ne doit pas contenir de symboles et ponctuations")
-        return false; 
-
+    //Regex votre ville doit contenir que des lettres entre 3 et 20
+    function RegexVille() {
+        const city = contact.city
+        if (/^[A-Za-z]{3,20}$/.test(city)) {
+            messageCity.textContent = "";
+            return true;
+        }
+        else {
+            messageCity.textContent = "Paris"
+            alert("Votre ville doit contenir 3 à 20 caractères et ne doit contenir ni chiffres ni symboles ")
+            return false;
+        }
     }
-}
+    //Regex votre adresse mail n'est pas valide 
+    function RegexMail(){
+        const email = contact.email
+        if (/^[a-z0-9\._-]+@[a-z0-9\.-]+\.[a-z]{2,3}$/.test(email)){
+            messageEmail.textContent = "";
+            return true; 
+        }
+        else {
+            messageEmail.textContent = "formation.devweb@gmail.com";
+            alert("Votre adresse mail est invalide")
+            return false; 
+        }
+    }
 
-});
-
+//Création de la clé qui permettra de stocker les données du formulaire de contact rempli par le client dans le localStorage
+localStorage.setItem("client", JSON.stringify(contact))
+})
+})
 
 
 

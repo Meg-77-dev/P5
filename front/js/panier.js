@@ -110,7 +110,6 @@ function AffichPanier(dataAPI, i) {
         //vérifier si le canapé existe dans le localStorage avec l'id et la couleur 
         const inputModif = panierLocalStorageInitial.find((kanap) => kanap.id == kanapInputModif.dataset.id && kanap.color == kanapInputModif.dataset.color);
         console.log(inputModif)
-
         //Modifier la quantité dans l'input
         if (inputModif) {
             const NouvelQuant = inputModif.quantity = inputQuant.value
@@ -121,9 +120,8 @@ function AffichPanier(dataAPI, i) {
             if (NouvelQuant < 1 || NouvelQuant > 100) {
                 alert("Veuillez selectionner une quantité entre 1 et 100")
             }
+        calculPrix()  
         }
-        calculPrix()
-
     })
 
     //Création de la div cart__item__content__settings__delete contenant la balise paragraphe qui permettra de supprimer un canapé
@@ -182,14 +180,10 @@ async function main() {
 }
 main();
 
-//formulaire de commande 
-    const form = document.querySelector(".cart__order__form")
-    console.log(form)
-
-
+//FORMULAIRE 
 //selectionner le bouton commander
-const btnOrder = document.querySelector("#order")
-btnOrder.addEventListener("click", (event) => {
+const form = document.querySelector(".cart__order__form")
+form.addEventListener("submit", (event) => {
     event.preventDefault()
     if (panierLocalStorageInitial == 0) {
         alert("Veuillez ajouter un ou des canapés au panier")
@@ -223,6 +217,7 @@ btnOrder.addEventListener("click", (event) => {
         products,
     }
 
+
     // Selection des balises contenant les messages d'erreur
     const messageFirstName = document.querySelector("#firstNameErrorMsg")
     const messageLastName = document.querySelector("#lastNameErrorMsg")
@@ -233,34 +228,6 @@ btnOrder.addEventListener("click", (event) => {
     // constante contenant l'orderId 
     const orderId = "";
 
-    //Requête POST
-    fetch("http://localhost:3000/api/products/order", {
-        method: "POST",
-        headers: {
-            "Content-type": "application/json",
-        },
-        body:
-            JSON.stringify(contenuForm)
-    })
-        .then(reponse => reponse.json())
-        .then(dataForm => {
-            const orderId = dataForm.orderId
-            console.log(orderId)
-
-        if(orderId != null){
-            alert("Votre commande a été enregistré")
-            window.location.href = "confirmation.html?id=" + orderId
-        }
-        else {
-            alert("Votre commande est invalide")
-        }
-
-    RegexPrenom()
-    RegexNom()
-    RegexAdresse()
-    RegexVille()
-    RegexMail()
-    
     //Regex votre prénom doit contenir minimun 3 lettres et maximum 20
     function RegexPrenom() {
         const firstName = contact.firstName
@@ -329,11 +296,40 @@ btnOrder.addEventListener("click", (event) => {
             return false; 
         }
     }
+    if(RegexPrenom() == true && RegexNom() == true  && RegexAdresse() == true && RegexVille() == true && RegexMail() == true) {
+        //Création de la clé qui permettra de stocker les données du formulaire de contact rempli par le client dans le localStorage
+    localStorage.setItem("client", JSON.stringify(contact))
+    sauvdonnéees ()
+    }
+    else {
+        alert("Veuillez remplir correctement le formulaire")
+    }
 
-//Création de la clé qui permettra de stocker les données du formulaire de contact rempli par le client dans le localStorage
-localStorage.setItem("client", JSON.stringify(contact))
-})
-})
+ //Requête POST
+ function sauvdonnéees () {
+ fetch("http://localhost:3000/api/products/order", {
+    method: "POST",
+    headers: {
+        "Content-type": "application/json",
+    },
+    body:
+        JSON.stringify(contenuForm)
+ })
+        .then(reponse => reponse.json())
+        .then(dataForm => {
+            const orderId = dataForm.orderId
+            console.log(orderId)
 
+        if(orderId != null){
+            alert("Votre commande a été enregistré")
+            window.location.href = "confirmation.html?id=" + orderId
+        }
+        else {
+            alert("Votre commande est invalide")
+        }
+    })
+}
+})
+    
 
 

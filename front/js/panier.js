@@ -11,11 +11,11 @@ async function fetchPanier(i) {
         .then((dataAPI) => AffichPanier(dataAPI, i));
 }
 
-function calculPrix() {
+    function calculPrix() {
     //Total
     let totalPrice = 0;
     let totalQuantity = 0;
-    //Calcul nombre de canapés 
+    //Calcul nombre et le prix des canapés 
     for (const kanap of panierLocalStorage) {
         totalQuantity += Number(kanap.quantity)
         totalPrice += Number(kanap.quantity) * Number(kanap.price);
@@ -107,21 +107,25 @@ function AffichPanier(dataAPI, i) {
         //Récupérer l'élément parent
         const kanapInputModif = inputQuant.closest("article")
         console.log(kanapInputModif)
-        //vérifier si le canapé existe dans le localStorage avec l'id et la couleur 
+        //vérifier si le canapé existe dans le localStorage initial avec l'id et la couleur 
         const inputModif = panierLocalStorageInitial.find((kanap) => kanap.id == kanapInputModif.dataset.id && kanap.color == kanapInputModif.dataset.color);
-        console.log(inputModif)
+        //Vérification dans le localStorage contenant le prix
+        const inputModifNewLS = panierLocalStorage.find((kanap) => kanap.id == kanapInputModif.dataset.id && kanap.color == kanapInputModif.dataset.color);
         //Modifier la quantité dans l'input
         if (inputModif) {
-            const NouvelQuant = inputModif.quantity = inputQuant.value
+            const NouvelQuant = inputQuant.value
+            //Modif quantité localStorage initial
+            inputModif.quantity = inputQuant.value
             console.log(NouvelQuant)
-            inputModif.quantity = NouvelQuant
+            //Modif quantité localStorage contenant le prix
+            inputModifNewLS.quantity = inputQuant.value
             localStorage.setItem("cart", JSON.stringify(panierLocalStorageInitial))
             //si la nouvelle quantité n'est entre 1 et 100
             if (NouvelQuant < 1 || NouvelQuant > 100) {
                 alert("Veuillez selectionner une quantité entre 1 et 100")
             }
-        calculPrix()  
         }
+        calculPrix()  
     })
 
     //Création de la div cart__item__content__settings__delete contenant la balise paragraphe qui permettra de supprimer un canapé
@@ -141,18 +145,21 @@ function AffichPanier(dataAPI, i) {
         confirm("Voulez-vous vraiment supprimer le canapé du panier ?")
         //Récupérer l'élément parent
         const kanapDelete = deleteItem.closest("article")
-        //vérifier avec l'id et la couleur qu'il s'agit du bon canapé 
-        const bonKanapDelete = panierLocalStorage.findIndex((kanap) => kanap.id == kanapDelete.dataset.id && kanap.color == kanapDelete.dataset.color);
-        console.log(bonKanapDelete);
+        //vérifier avec l'id et la couleur qu'il s'agit du bon canapé dans le localStorage initial
+        const bonKanapDelete = panierLocalStorageInitial.findIndex((kanap) => kanap.id == kanapDelete.dataset.id && kanap.color == kanapDelete.dataset.color);
+        //Vérification dans le nouveau localStorage contenant le prix 
+        const bonKanapDeleteNewLS = panierLocalStorage.findIndex((kanap) => kanap.id == kanapDelete.dataset.id && kanap.color == kanapDelete.dataset.color);
         if (bonKanapDelete !== -1) {
             //Supprimer l'affichage de l'article
             kanapDelete.remove();
-            //Supprimer l'article du localStorage
-            panierLocalStorage.splice(bonKanapDelete, 1);
+            //Supprimer l'article du localStorage initial
+            panierLocalStorageInitial.splice(bonKanapDelete, 1);
+            //Supprimer l'article du nouveau localStorage
+            panierLocalStorage.splice(bonKanapDeleteNewLS, 1)
             //Mettre à jour le localStorage 
-            localStorage.setItem("cart", JSON.stringify(panierLocalStorage));
+            localStorage.setItem("cart", JSON.stringify(panierLocalStorageInitial));
 
-            calculPrix()
+            calculPrix();
         }
 
     })
@@ -265,7 +272,7 @@ form.addEventListener("submit", (event) => {
         }
         else {
             messageAddress.textContent = "1 rue du Chateau"
-            alert("Votre adresse postale ne doit pas contenir ni de symboles ni de ponctuations")
+            alert("Votre adresse postale doit contenir un minimum de 3 lettres et ne doit pas contenir ni de symboles ni de ponctuations")
             return false;
 
         }
